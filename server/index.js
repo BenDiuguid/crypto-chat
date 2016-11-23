@@ -45,10 +45,11 @@ io.on('connection', (socket) => {
     );
   });
 
-  // When the server receives a sentMessage command
-  // it emits a receivedMessage event to all clients.
-  socket.on('sentMessage', (message) => {
-    io.emit('receivedMessage', message);
+  // When the server receives a sendMessage command
+  // it emits a messageReceived event to all clients.
+  socket.on('sendMessage', (message) => {
+    console.log(`Received Message '${message}' now relaying it!`);
+    io.emit('messageReceived', message);
   });
 
 });
