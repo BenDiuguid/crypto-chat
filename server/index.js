@@ -14,9 +14,9 @@ const PATHS = {
 // Setup http server.
 http.listen(PORT, () => {
   console.log(`==> Listening on port: ${PORT}`);
-  setInterval(() => {
-    console.log(`connections: \n\t${(connections.map(con => con._id)).join('\n\t')}\n`);
-  }, 10 * 1000);
+  // setInterval(() => {
+  //   console.log(`connections: \n\t${(connections.map(con => con._id)).join('\n\t')}\n`);
+  // }, 10 * 1000);
 });
 
 // Configure Express
@@ -26,40 +26,11 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(PATHS.client, 'index.html'));
 });
 
-// Global Array of all connections to connected clients
-let connections = [];
 
 const io = require('socket.io')(http);
+const socketSetup = require('./socket');
 
 io.on('connection', (socket) => {
-
-  // Push all connected clients
-  connections.push({ _id: socket.id });
   console.log(`😎 socket CONNECTED with id: ${socket.id}`);
-
-  // Upon socket disconnection, remove the disconnected socket from connections
-  socket.on('disconnect', () => {
-    console.log(`😭 socket DISCONNECTED with id: ${socket.id}`);
-    connections = connections.filter(
-      con => con._id !== socket.id
-    );
-  });
-
-  // When the server receives a sendMessage command
-  // it emits a messageReceived event to all clients.
-  socket.on('sendMessage', (message) => {
-    console.log(`Received Message '${message}' now relaying it!`);
-    io.emit('messageReceived', message);
-  });
-
+  socketSetup(socket, io);
 });
-
-// Helper method to find a connection, based on id.
-function findConnection(id, connections) {
-  const conArray = connections.filter(con => con._id === id)
-  if (conArray.length > 0) {
-    return conArray[0];
-  } else {
-    return undefined;
-  }
-}

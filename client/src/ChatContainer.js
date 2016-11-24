@@ -10,6 +10,8 @@ class ChatContainer extends Component {
 
     this.sendMessage = this.sendMessage.bind(this);
     this.messageReceived = this.messageReceived.bind(this);
+    this.usersUpdated = this.usersUpdated.bind(this);
+
     this.state = {
       messages: [],
       users: [],
@@ -30,15 +32,30 @@ class ChatContainer extends Component {
         ...this.state.messages,
         message,
       ]
-    })
+    });
+  }
+
+  usersUpdated(users) {
+    this.setState({
+      ...this.state,
+      users,
+    });
   }
 
   componentDidMount() {
     this.props.socket.on('messageReceived', this.messageReceived);
+    this.props.socket.on('usersUpdated', this.usersUpdated);
+
+    // TODO: create and emit public key here
+    this.props.socket.emit('joinChat', {
+      name: this.props.name,
+      _id: this.props.socket.id,
+    });
   }
 
   componentDidUnMount() {
     this.props.socket.removeListener('messageReceived');
+    this.props.socket.removeListener('usersUpdated');
   }
 
   render() {
