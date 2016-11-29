@@ -1,14 +1,15 @@
 import React from 'react';
 
-const UserList = (props) => {
-  const { users } = props;
+const UserList = function(props) {
   return (
     <div>
-      {users.map( (user, index) =>
-        <div key={index}>
-          <p>{user.name}</p>
-        </div>
-      )}
+      {props.users.map( function(user, index) {
+        return (
+          <div key={index}>
+            <p>{user.name}</p>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -4771,9 +4771,9 @@ socket.io-parser@2.3.1:
     isarray "0.0.1"
     json3 "3.3.2"
 
-socket.io-react@^1.0.0:
+"socket.io-react@git://github.com/BenDiuguid/socket.io-react.git#master":
   version "1.0.0"
-  resolved "https://registry.yarnpkg.com/socket.io-react/-/socket.io-react-1.0.0.tgz#0292554b864ccf9eca4f09554fa0ea1694573d9d"
+  resolved "git://github.com/BenDiuguid/socket.io-react.git#fa9ca54a4fc413f10f8d912288ef58f5fdff1504"
 
 sockjs-client@1.0.3, sockjs-client@^1.0.3:
   version "1.0.3"

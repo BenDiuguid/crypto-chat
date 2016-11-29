@@ -14,9 +14,6 @@ const PATHS = {
 // Setup http server.
 http.listen(PORT, () => {
   console.log(`==> Listening on port: ${PORT}`);
-  // setInterval(() => {
-  //   console.log(`connections: \n\t${(connections.map(con => con._id)).join('\n\t')}\n`);
-  // }, 10 * 1000);
 });
 
 // Configure Express

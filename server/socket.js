@@ -5,7 +5,10 @@ const socketSetup = (socket, io) => {
   // Upon socket disconnection, remove the disconnected socket from connections
   socket.on('disconnect', () => {
     console.log(`😭 socket DISCONNECTED with id: ${socket.id}`);
-    users = users.filter( user => {console.log(user._id); return user._id !== socket.id} );
+    users = users.filter( function(user) {
+      // console.log(user._id);
+      return user._id !== socket.id;
+    });
     io.emit('usersUpdated', users);
   });
 
@@ -15,6 +18,8 @@ const socketSetup = (socket, io) => {
     console.log(`Received Message '${message.text}' now relaying it!`);
     io.emit('messageReceived', message);
   });
+
+  
 
   socket.on('joinChat', (user) => {
     users.push(user);

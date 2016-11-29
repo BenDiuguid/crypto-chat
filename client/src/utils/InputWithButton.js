@@ -40,7 +40,7 @@ class InputWithButton extends Component {
         />
         <button
           type="submit"
-          disabled={!(this.state.text.length > 0)}
+          disabled={(this.state.text.length === 0)}
           >
           {this.props.buttonText}
         </button>

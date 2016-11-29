@@ -9,7 +9,7 @@
     "react": "15.4.0",
     "react-dom": "15.4.0",
     "socket.io-client": "^1.5.1",
-    "socket.io-react": "^1.0.0"
+    "socket.io-react": "git://github.com/BenDiuguid/socket.io-react.git#master"
   },
   "scripts": {
     "start": "react-scripts start",

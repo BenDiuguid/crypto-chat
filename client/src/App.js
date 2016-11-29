@@ -30,7 +30,7 @@ class App extends Component {
 
   onNameSubmit(name) {
     this.setState({
-      name,
+      name: name,
     });
   }
 }

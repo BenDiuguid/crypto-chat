@@ -19,8 +19,9 @@ class ChatContainer extends Component {
   }
 
   sendMessage(text) {
+    // TODO: Encrypt with private key
     this.props.socket.emit('sendMessage', {
-      text,
+      text: text,
       name: this.props.name,
     });
   }
@@ -38,7 +39,7 @@ class ChatContainer extends Component {
   usersUpdated(users) {
     this.setState({
       ...this.state,
-      users,
+      users: users,
     });
   }
 
@@ -50,6 +51,7 @@ class ChatContainer extends Component {
     this.props.socket.emit('joinChat', {
       name: this.props.name,
       _id: this.props.socket.id,
+      // publicKey:
     });
   }
 
@@ -59,11 +61,10 @@ class ChatContainer extends Component {
   }
 
   render() {
-    const { name } = this.props;
     return (
       <div>
         <h1>
-          HELLO {name}
+          HELLO {this.props.name}
         </h1>
         <div className="message-list">
           <ChatMessages messages={this.state.messages} />
@@ -73,7 +74,6 @@ class ChatContainer extends Component {
           <UserList users={this.state.users}/>
         </div>
       </div>
-
     );
   }
 }
