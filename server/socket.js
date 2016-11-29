@@ -1,3 +1,5 @@
+"use strict";
+
 let users = [];
 
 const socketSetup = (socket, io) => {
@@ -19,7 +21,7 @@ const socketSetup = (socket, io) => {
     io.emit('messageReceived', message);
   });
 
-  
+
 
   socket.on('joinChat', (user) => {
     users.push(user);
