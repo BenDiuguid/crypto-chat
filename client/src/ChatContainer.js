@@ -3,6 +3,7 @@ import { socketConnect } from 'socket.io-react';
 import ChatMessages from './ChatMessages';
 import UserList from './UserList';
 import InputWithButton from './utils/InputWithButton';
+const NodeRSA = require('node-rsa');
 
 class ChatContainer extends Component {
   constructor(props) {
@@ -102,16 +103,19 @@ class ChatContainer extends Component {
 
   // hash the text using our public/private keys
   hash(text) {
+    var key = new NodeRSA({b: 512});
+    var encrypted = key.encrypt(text+"", 'base64');
     // const publicKey = this.state.publicKey;
     // const privateKey = this.state.privateKey;
 
     // TODO: actually hash
 
-    return text;
+    return encrypted;
   }
 
   // unhash the text using our public/private keys
   unhash(text) {
+
     // const publicKey = this.state.publicKey;
     // const privateKey = this.state.privateKey;
 
