@@ -3,15 +3,14 @@ import { socketConnect } from 'socket.io-react';
 import ChatMessages from './ChatMessages';
 import UserList from './UserList';
 import InputWithButton from './utils/InputWithButton';
+import NodeRSA from 'node-rsa';
 
 class ChatContainer extends Component {
   constructor(props) {
     super(props);
 
     this.sendHashed = this.sendHashed.bind(this);
-    this.hashedMessage = this.hashedMessage.bind(this);
-    this.doubleHashedMessage = this.doubleHashedMessage.bind(this);
-    this.finalUnhash = this.finalUnhash.bind(this);
+    this.receiveHashed = this.receiveHashed.bind(this);
     this.hash = this.hash.bind(this);
     this.unhash = this.unhash.bind(this);
     this.usersUpdated = this.usersUpdated.bind(this);
@@ -26,57 +25,45 @@ class ChatContainer extends Component {
 
   // send new message
   sendHashed(text) {
-    const hashedText = this.hash(text);
 
     const message = {
-      text: hashedText,
+      text: null, // Override this when sending.
       name: this.props.name,
       originalSender: this.props.socket.id,
-      returnTo: null,
+      sendingTo: null, // Override this when sending.
     };
 
-    this.props.socket.emit('sendHashed', message);
+    // const hashedText = this.hash(text, this.state.publicKey); // Override with encrypted text.
 
-    const newMessage = {
-      ...message,
-      text: text,
-    };
+    this.state.users.forEach( (user) => {
+      if(user.publicKey !== this.state.publicKey) {
+        console.log('SENDING');
+        const hashedText = this.hash(text, user.publicKey); // Override with encrypted text.
+        message.text = hashedText;
+        message.sendingTo = user._id;
+
+        this.props.socket.emit('sendHashed', message);
+      }
+    });
+
+    message.text = text;
 
     this.setState({
       ...this.state,
       messages: [
         ...this.state.messages,
-        newMessage
+        message
       ]
     });
   }
 
-  // new message received
-  hashedMessage(singleHashedMessage) {
-    // We have received a brand new message!
-    // We must hash the message using our private key then send back to the server
-    const doubleHashedMessageText = this.hash(singleHashedMessage.text);
-
-    this.props.socket.emit('sendDoubleHashed', {
-      ...singleHashedMessage, // This spreads out the message object's properties into this new object.
-      text: doubleHashedMessageText, // This overrides the message.text field into this new object.
-      returnTo: this.props.socket.id, // This overrides message.returnTo
-    });
-  }
-
-  // unhash our part and send back for everyone else
-  doubleHashedMessage(doubleHashedMessage) {
-    const singleHashedMessageText = this.unhash(doubleHashedMessage.text);
-
-    this.props.socket.emit('sendUnhashed', {
-      ...doubleHashedMessage, // This spreads out the message object's properties into this new object.
-      text: singleHashedMessageText, // This overrides the message.text field into this new object.
-    });
-  }
-
   // received single hashed message with only our part left
-  finalUnhash(ourHashedMessage) {
-    const unhashedMessageText = this.unhash(ourHashedMessage.text);
+  receiveHashed(ourHashedMessage) {
+    const otherPublicKey = this.state.users.filter( function(user) {
+      return user._id === ourHashedMessage.originalSender;
+    })[0].publicKey;
+
+    const unhashedMessageText = this.unhash(ourHashedMessage.text, otherPublicKey);
 
     const newMessage = {
       ...ourHashedMessage,
@@ -101,34 +88,40 @@ class ChatContainer extends Component {
   }
 
   // hash the text using our public/private keys
-  hash(text) {
-    // const publicKey = this.state.publicKey;
-    // const privateKey = this.state.privateKey;
+  hash(text, publicKey) {
+    const privateKey = this.state.privateKey;
 
-    // TODO: actually hash
+    const myKey = new NodeRSA();
+    myKey.importKey(privateKey, 'private');
 
-    return text;
+    const otherKey = new NodeRSA();
+    otherKey.importKey(publicKey, 'public');
+
+    return otherKey.encrypt(myKey.encryptPrivate(text, 'base64'), 'base64', 'base64');
   }
 
   // unhash the text using our public/private keys
-  unhash(text) {
-    // const publicKey = this.state.publicKey;
-    // const privateKey = this.state.privateKey;
+  unhash(text, publicKey) {
+    console.log(`unhashed: ${text}`);
+    const privateKey = this.state.privateKey;
 
-    // TODO: actually unhash
+    const myKey = new NodeRSA();
+    myKey.importKey(privateKey, 'private');
 
-    return text;
+    const otherKey = new NodeRSA();
+    otherKey.importKey(publicKey, 'public');
+
+    return otherKey.decryptPublic(myKey.decrypt(text, 'base64'), 'utf8');
   }
 
   componentDidMount() {
-    this.props.socket.on('hashedMessage', this.hashedMessage);
-    this.props.socket.on('doubleHashedMessage', this.doubleHashedMessage);
-    this.props.socket.on('finalUnhash', this.finalUnhash);
+    this.props.socket.on('receiveHashed', this.receiveHashed);
     this.props.socket.on('usersUpdated', this.usersUpdated);
 
-    // TODO: actually create keys
-    const publicKey = null;
-    const privateKey = null;
+    const key = new NodeRSA({b: 512});
+
+    const publicKey = key.exportKey('public');
+    const privateKey = key.exportKey('private');
 
     this.setState({
       ...this.state,
@@ -144,9 +137,7 @@ class ChatContainer extends Component {
   }
 
   componentDidUnMount() {
-    this.props.socket.removeListener('hashedMessage');
-    this.props.socket.removeListener('doubleHashedMessage');
-    this.props.socket.removeListener('finalUnhash');
+    this.props.socket.removeListener('receiveHashed');
     this.props.socket.removeListener('usersUpdated');
   }
 
