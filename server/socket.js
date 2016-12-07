@@ -21,9 +21,9 @@ const socketSetup = (socket, io) => {
   });
 
   // server relays messages from the original sender, to who the message was designated for.
-  socket.on('sendHashed', function(message) {
-    console.log(`Received '${message.text}' from '${message.originalSender}' to '${message.sendingTo}' `);
-    io.sockets.sockets[message.sendingTo].emit('receiveHashed', message);
+  socket.on('sendEncrypted', function(message) {
+    console.log(`\nReceived '${message.text}' from '${message.originalSender}' to '${message.sendingTo}' \n`);
+    io.sockets.sockets[message.sendingTo].emit('receiveEncrypted', message);
   });
 
 };

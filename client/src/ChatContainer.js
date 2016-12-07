@@ -9,10 +9,10 @@ class ChatContainer extends Component {
   constructor(props) {
     super(props);
 
-    this.sendHashed = this.sendHashed.bind(this);
-    this.receiveHashed = this.receiveHashed.bind(this);
-    this.hash = this.hash.bind(this);
-    this.unhash = this.unhash.bind(this);
+    this.sendEncrypted = this.sendEncrypted.bind(this);
+    this.receiveEncrypted = this.receiveEncrypted.bind(this);
+    this.encrypt = this.encrypt.bind(this);
+    this.decrypt = this.decrypt.bind(this);
     this.usersUpdated = this.usersUpdated.bind(this);
 
     this.state = {
@@ -24,7 +24,7 @@ class ChatContainer extends Component {
   }
 
   // send new message
-  sendHashed(text) {
+  sendEncrypted(text) {
 
     const message = {
       text: null, // Override this when sending.
@@ -33,15 +33,15 @@ class ChatContainer extends Component {
       sendingTo: null, // Override this when sending.
     };
 
-    // const hashedText = this.hash(text, this.state.publicKey); // Override with encrypted text.
+    // const encryptedText = this.encrypt(text, this.state.publicKey); // Override with encrypted text.
 
     this.state.users.forEach( (user) => {
       if(user.publicKey !== this.state.publicKey) {
-        const hashedText = this.hash(text, user.publicKey); // Override with encrypted text.
-        message.text = hashedText;
+        const encryptedText = this.encrypt(text, user.publicKey);
+        message.text = encryptedText;
         message.sendingTo = user._id;
 
-        this.props.socket.emit('sendHashed', message);
+        this.props.socket.emit('sendEncrypted', message);
       }
     });
 
@@ -56,17 +56,17 @@ class ChatContainer extends Component {
     });
   }
 
-  // received single hashed message with only our part left
-  receiveHashed(ourHashedMessage) {
+  // received single encrypted message with only our part left
+  receiveEncrypted(ourEncryptedMessage) {
     const otherPublicKey = this.state.users.filter( function(user) {
-      return user._id === ourHashedMessage.originalSender;
+      return user._id === ourEncryptedMessage.originalSender;
     })[0].publicKey;
 
-    const unhashedMessageText = this.unhash(ourHashedMessage.text, otherPublicKey);
+    const decryptedMessageText = this.decrypt(ourEncryptedMessage.text, otherPublicKey);
 
     const newMessage = {
-      ...ourHashedMessage,
-      text: unhashedMessageText
+      ...ourEncryptedMessage,
+      text: decryptedMessageText
     };
 
     this.setState({
@@ -87,8 +87,8 @@ class ChatContainer extends Component {
     });
   }
 
-  // hash the text using our public/private keys
-  hash(text, publicKey) {
+  // encrypt the text using our public/private keys
+  encrypt(text, publicKey) {
     const privateKey = this.state.privateKey;
 
     const myKey = new NodeRSA();
@@ -97,11 +97,15 @@ class ChatContainer extends Component {
     const otherKey = new NodeRSA();
     otherKey.importKey(publicKey, 'public');
 
-    return otherKey.encrypt(myKey.encryptPrivate(text, 'base64'), 'base64', 'base64');
+    return otherKey.encrypt(
+      myKey.encryptPrivate(text, 'base64'),
+      'base64',
+      'base64'
+    );
   }
 
-  // unhash the text using our public/private keys
-  unhash(text, publicKey) {
+  // decrypt the text using our public/private keys
+  decrypt(text, publicKey) {
     const privateKey = this.state.privateKey;
 
     const myKey = new NodeRSA();
@@ -110,11 +114,14 @@ class ChatContainer extends Component {
     const otherKey = new NodeRSA();
     otherKey.importKey(publicKey, 'public');
 
-    return otherKey.decryptPublic(myKey.decrypt(text, 'base64'), 'utf8');
+    return otherKey.decryptPublic(
+      myKey.decrypt(text, 'base64'),
+      'utf8'
+    );
   }
 
   componentDidMount() {
-    this.props.socket.on('receiveHashed', this.receiveHashed);
+    this.props.socket.on('receiveEncrypted', this.receiveEncrypted);
     this.props.socket.on('usersUpdated', this.usersUpdated);
 
     const key = new NodeRSA({b: 512});
@@ -136,7 +143,7 @@ class ChatContainer extends Component {
   }
 
   componentDidUnMount() {
-    this.props.socket.removeListener('receiveHashed');
+    this.props.socket.removeListener('receiveEncrypted');
     this.props.socket.removeListener('usersUpdated');
   }
 
@@ -154,7 +161,7 @@ class ChatContainer extends Component {
           <div className="message-list">
             <h4>Messages</h4>
             <ChatMessages messages={this.state.messages} />
-            <InputWithButton onSubmit={this.sendHashed} buttonText="SEND" />
+            <InputWithButton onSubmit={this.sendEncrypted} buttonText="SEND" />
           </div>
         </div>
       </div>
