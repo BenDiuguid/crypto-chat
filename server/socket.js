@@ -15,7 +15,7 @@ const socketSetup = (socket, io) => {
 
   // When a user joins the chat, update the users.
   socket.on('joinChat', (user) => {
-    console.log(`${user.name}\t\t joined`);
+    console.log(`${user.name}\t\t joined with id: \t'${user._id}'`);
     users.push(user);
     io.emit('usersUpdated', users);
   });

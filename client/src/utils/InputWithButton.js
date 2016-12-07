@@ -1,4 +1,6 @@
 import React, { Component, PropTypes } from 'react';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
 
 class InputWithButton extends Component {
   constructor(props) {
@@ -32,18 +34,20 @@ class InputWithButton extends Component {
 
   render() {
     return (
-      <form onSubmit={this.onSubmit}>
-        <input
+      <form onSubmit={this.onSubmit} className="form">
+        <TextField
+          id={this.props.buttonText + "id"}
           type="text"
           value={this.state.text}
           onChange={this.handleChange}
-        />
-        <button
+        ></TextField>
+        <RaisedButton
+          primary
           type="submit"
           disabled={(this.state.text.length === 0)}
           >
           {this.props.buttonText}
-        </button>
+        </RaisedButton>
       </form>
     );
   }

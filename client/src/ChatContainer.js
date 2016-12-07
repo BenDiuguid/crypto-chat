@@ -37,7 +37,6 @@ class ChatContainer extends Component {
 
     this.state.users.forEach( (user) => {
       if(user.publicKey !== this.state.publicKey) {
-        console.log('SENDING');
         const hashedText = this.hash(text, user.publicKey); // Override with encrypted text.
         message.text = hashedText;
         message.sendingTo = user._id;
@@ -81,6 +80,7 @@ class ChatContainer extends Component {
 
   // receive the new uesers from the server and simply replace ours.
   usersUpdated(users) {
+    console.log(users);
     this.setState({
       ...this.state,
       users: users,
@@ -102,7 +102,6 @@ class ChatContainer extends Component {
 
   // unhash the text using our public/private keys
   unhash(text, publicKey) {
-    console.log(`unhashed: ${text}`);
     const privateKey = this.state.privateKey;
 
     const myKey = new NodeRSA();
@@ -143,16 +142,20 @@ class ChatContainer extends Component {
 
   render() {
     return (
-      <div>
+      <div className="app-body">
         <h1>
-          HELLO {this.props.name}
+          Hello {this.props.name}
         </h1>
-        <div className="message-list">
-          <ChatMessages messages={this.state.messages} />
-          <InputWithButton onSubmit={this.sendHashed} buttonText="SEND" />
-        </div>
-        <div className="user-list">
-          <UserList users={this.state.users}/>
+        <div className="list-container">
+          <div className="user-list">
+            <h4>Users</h4>
+            <UserList users={this.state.users}/>
+          </div>
+          <div className="message-list">
+            <h4>Messages</h4>
+            <ChatMessages messages={this.state.messages} />
+            <InputWithButton onSubmit={this.sendHashed} buttonText="SEND" />
+          </div>
         </div>
       </div>
     );

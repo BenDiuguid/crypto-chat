@@ -1,16 +1,22 @@
 import React from 'react';
+import { List, ListItem } from 'material-ui/List';
+import ContactsIcon from 'material-ui/svg-icons/communication/contacts';
 
 const UserList = function(props) {
   return (
-    <div>
+    <List>
       {props.users.map( function(user, index) {
         return (
-          <div key={index}>
-            <p>{user.name}</p>
-          </div>
+          <ListItem
+            key={index}
+            primaryText={user.name}
+            secondaryText={user._id}
+            leftIcon={<ContactsIcon />}
+            >
+          </ListItem>
         );
       })}
-    </div>
+    </List>
   );
 };
 
