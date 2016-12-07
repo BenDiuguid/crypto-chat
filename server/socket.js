@@ -1,4 +1,5 @@
 "use strict";
+const chalk = require('chalk');
 
 let users = [];
 
@@ -22,7 +23,7 @@ const socketSetup = (socket, io) => {
 
   // server relays messages from the original sender, to who the message was designated for.
   socket.on('sendEncrypted', function(message) {
-    console.log(`\nReceived '${message.text}' from '${message.originalSender}' to '${message.sendingTo}' \n`);
+    console.log(`\nReceived '${chalk.red(message.text)}' from '${chalk.green(message.originalSender)}' to '${chalk.yellow(message.sendingTo)}' \n`);
     io.sockets.sockets[message.sendingTo].emit('receiveEncrypted', message);
   });
 
